@@ -1,0 +1,18 @@
+const prayer=[
+["Pai nosso, que estais nos céus,","A oração começa dirigindo-se a Deus como Pai."],
+["santificado seja o vosso Nome;","Um pedido de reverência e reconhecimento da santidade de Deus."],
+["venha a nós o vosso Reino;","Desejo de que a justiça, a paz e o amor de Deus estejam presentes."],
+["seja feita a vossa vontade, assim na terra como no céu.","Pedido para viver segundo o bem e a vontade de Deus."],
+["O pão nosso de cada dia nos dai hoje;","Pedido de sustento e cuidado para a vida diária."],
+["perdoai-nos as nossas ofensas,","Pedido de perdão por nossas faltas."],
+["assim como nós perdoamos a quem nos tem ofendido;","Reconhecimento de nosso compromisso com o perdão ao próximo."],
+["e não nos deixeis cair em tentação,","Pedido de força para não escolher o mal."],
+["mas livrai-nos do mal.","Pedido de proteção diante do mal."],
+["Amém.","Expressão de concordância com a oração."],
+["Oração concluída.","Você pode retomar qualquer trecho e observar novamente as imagens."]
+];let step=Number(sessionStorage.getItem('oa-step')||0);if(!Number.isInteger(step)||step<0||step>=prayer.length)step=0;
+const img=document.getElementById('prayerImage'),title=document.getElementById('prayerText'),sense=document.getElementById('prayerSense'),progress=document.getElementById('progressText'),fill=document.getElementById('progressFill'),prev=document.getElementById('prev'),next=document.getElementById('next');
+function render(focus=false){title.textContent=prayer[step][0];sense.textContent=prayer[step][1];const num=String(step+1).padStart(2,'0');img.src='https://raw.githubusercontent.com/aeduardasantana/oracaovisual/main/assets/oracoes-ilustradas/pai-nosso/'+num+'.webp';img.alt='Ilustração do trecho '+(step+1)+' do Pai-Nosso. Interprete a imagem junto com o texto; a cena não substitui Libras.';progress.textContent='Trecho '+(step+1)+' de '+prayer.length;fill.style.width=((step+1)/prayer.length*100)+'%';prev.disabled=step===0;next.textContent=step===prayer.length-1?'Concluir ✓':'Próximo →';next.disabled=step===prayer.length-1;sessionStorage.setItem('oa-step',step);if(focus)title.focus()}
+prev.addEventListener('click',()=>{if(step>0){step--;render(true)}});next.addEventListener('click',()=>{if(step<prayer.length-1){step++;render(true)}});document.getElementById('restart').addEventListener('click',()=>{step=0;render(true)});
+document.getElementById('feedbackForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.currentTarget);const note=document.getElementById('comentario').value.trim();const record='Avaliação voluntária — Oração Acessível\nNavegação: '+f.get('navegacao')+'\nImagens: '+f.get('imagens')+'\nComentário: '+(note||'Não informado')+'\nSem coleta automática.';document.getElementById('feedbackOutput').textContent=record;const copy=document.getElementById('copyFeedback');copy.hidden=false;copy.dataset.record=record});document.getElementById('copyFeedback').addEventListener('click',async e=>{try{await navigator.clipboard.writeText(e.currentTarget.dataset.record);e.currentTarget.textContent='Registro copiado'}catch{document.getElementById('feedbackOutput').focus()}});document.getElementById('feedbackForm').addEventListener('reset',()=>{document.getElementById('feedbackOutput').textContent='';document.getElementById('copyFeedback').hidden=true});render();
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
