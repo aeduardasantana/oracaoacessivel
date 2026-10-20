@@ -20,13 +20,15 @@
   function makeText(){
     const selected=window.getSelection()?.toString().trim();
     if(mode.value==='selecao'){return selected||null;}
+    if(mode.value==='imagem'){return document.getElementById('imageDescription')?.textContent?.trim() || null;}
+    if(mode.value==='apresentacao'){return 'Bem-vindo ao Oração Acessível, um protótipo acadêmico do Projeto Integrador I do IFTO. Navegue pelos trechos do Pai-Nosso usando os botões de avançar e voltar. Cada trecho tem uma imagem com descrição acessível. Você pode ouvir a oração e a descrição das imagens. Para apoio em Libras, utilize o VLibras, ou assista ao vídeo do Pai-Nosso em Libras. Ao final, você pode enviar uma avaliação voluntária pelo WhatsApp.';}
     if(mode.value==='trecho'){
       return [document.getElementById('prayerText')?.textContent,document.getElementById('prayerSense')?.textContent].filter(Boolean).join('. ');
     }
     const blocks=document.querySelectorAll('main h1, main h2, main h3, main p, main .eyebrow');
     return [...blocks].filter(el=>!el.closest('form') && !el.closest('#readerPanel') && !el.closest('.tips')).map(el=>el.textContent.trim()).filter(Boolean).join('. ');
   }
-  play.addEventListener('click',()=>{
+  function startReading(){
     if(synth.paused && current){synth.resume();pause.textContent='Pausar';state('Leitura em andamento.');return;}
     const text=makeText();
     if(!text){state('Selecione um texto da página antes de escolher ouvir a seleção.');return;}
@@ -38,7 +40,10 @@
     utterance.onerror=(e)=>{if(turn!==session)return;current=null;pause.disabled=true;stop.disabled=true;state('Não foi possível reproduzir o áudio neste navegador.');};
     current=utterance;pause.disabled=false;stop.disabled=false;pause.textContent='Pausar';
     try{synth.speak(utterance);state('Leitura em andamento.');}catch{halt('Não foi possível iniciar o áudio.');}
-  });
+  }
+  play.addEventListener('click',startReading);
+  document.getElementById('describeImage')?.addEventListener('click',()=>{mode.value='imagem';startReading()});
+  document.getElementById('hearSite')?.addEventListener('click',()=>{mode.value='apresentacao';startReading()});
   pause.addEventListener('click',()=>{
     if(!current)return;
     if(synth.paused){synth.resume();pause.textContent='Pausar';state('Leitura em andamento.');}
