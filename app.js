@@ -3,7 +3,25 @@ let step=0;
 const img=document.getElementById('prayerImage'),title=document.getElementById('prayerText'),sense=document.getElementById('prayerSense'),progress=document.getElementById('progressText'),fill=document.getElementById('progressFill'),prev=document.getElementById('prev'),next=document.getElementById('next');
 function render(focus=false){title.textContent=prayer[step][0];sense.textContent=prayer[step][1];img.src='https://raw.githubusercontent.com/aeduardasantana/oracaovisual/main/assets/oracoes-ilustradas/pai-nosso/'+String(step+1).padStart(2,'0')+'.webp';img.alt=prayer[step][2];img.draggable=false;document.getElementById('imageDescription').textContent=prayer[step][2];progress.textContent='Trecho '+(step+1)+' de '+prayer.length;fill.style.width=((step+1)/prayer.length*100)+'%';prev.disabled=step===0;next.disabled=step===prayer.length-1;next.textContent=next.disabled?'Concluído ✓':'Próximo →';if(focus)title.focus();}
 prev.addEventListener('click',()=>{if(step>0){step--;render(true)}});next.addEventListener('click',()=>{if(step<prayer.length-1){step++;render(true)}});document.getElementById('restart').addEventListener('click',()=>{step=0;render(true)});render();
-document.getElementById('feedbackForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.currentTarget);const note=document.getElementById('comentario').value.trim();const record='Avaliação voluntária — Oração Acessível\nOração: Pai-Nosso\nNavegação: '+f.get('navegacao')+'\nImagens: '+f.get('imagens')+'\nComentário: '+(note||'Não informado');const url='https://wa.me/5562992053534?text='+encodeURIComponent(record);document.getElementById('feedbackStatus').textContent='Confira a mensagem e confirme o envio no WhatsApp.';window.open(url,'_blank','noopener,noreferrer');});
+const EVALUATION_ENDPOINT="https://script.google.com/macros/s/AKfycbwilI7GdTWX_O5gM9Xx7R-uX_Ttb7MNCq5e8BgN4KMlM9sETi-0Pp7vStK5_JG_xKUmng/exec";
+document.getElementById('feedbackForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const form=e.currentTarget,button=document.getElementById('submitFeedback'),status=document.getElementById('feedbackStatus');
+  if(!form.reportValidity())return;
+  if(!EVALUATION_ENDPOINT.startsWith('https://script.google.com/macros/s/'))return;
+  const data=new URLSearchParams(new FormData(form));
+  // Uma tentativa pode ser reenviada com o mesmo protocolo para evitar duplicidade.
+  if(!form.dataset.protocolo)form.dataset.protocolo='oa_'+(crypto.randomUUID?crypto.randomUUID().replace(/-/g,''):String(Date.now())+Math.random().toString(36).slice(2));
+  data.set('protocolo',form.dataset.protocolo);data.set('versao','1.0');
+  button.disabled=true;status.textContent='Enviando sua avaliação...';
+  try {
+    await fetch(EVALUATION_ENDPOINT,{method:'POST',mode:'no-cors',body:data});
+    status.textContent='Solicitação enviada ao serviço. A confirmação do registro na planilha ainda não está disponível automaticamente. Se necessário, contate a equipe.';
+    // Não limpar o formulário, pois não houve confirmação verificável da gravação.
+  } catch(err) {
+    status.textContent='Não foi possível enviar. Verifique sua conexão e tente novamente.';
+  } finally {button.disabled=false;}
+});
 const share=document.getElementById('shareWhatsapp');if(share)share.href='https://wa.me/?text='+encodeURIComponent('Conheça o Oração Acessível, protótipo acadêmico do IFTO de Eduarda Ferreira Santana Bispo e Leila Régia de Paiva Freitas. Uma experiência do Pai-Nosso com imagens, Libras e leitura por áudio. https://oracaoacessivel.compassrosesystems.com.br/');
 document.querySelectorAll('img').forEach(element=>{element.draggable=false;element.addEventListener('dragstart',event=>event.preventDefault());element.addEventListener('contextmenu',event=>event.preventDefault());});
 document.addEventListener('copy',event=>{if(event.target.closest('input,textarea'))return;event.preventDefault();});
