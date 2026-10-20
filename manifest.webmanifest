@@ -1,0 +1,10 @@
+{
+  "name": "Oração Acessível — Projeto Integrador I",
+  "short_name": "Oração Acessível",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbfaf7",
+  "theme_color": "#143f37",
+  "description": "Protótipo acadêmico de oração ilustrada com apoio ao uso de Libras."
+}
